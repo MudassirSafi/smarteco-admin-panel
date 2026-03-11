@@ -81,23 +81,23 @@ export default function UsersPage() {
                     <div className="pt-2">
                         <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full">
                             <TabsList className="bg-transparent border-none p-0 h-auto flex flex-wrap gap-3">
-                                <TabsTrigger value="all" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="all" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Users className="w-3.5 h-3.5" />
                                     <span>All Users (5)</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="residential" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="residential" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Home className="w-3.5 h-3.5" />
                                     <span>Residential (3)</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="business" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="business" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Building2 className="w-3.5 h-3.5" />
                                     <span>Business (2)</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="suspended" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="suspended" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <UserX className="w-3.5 h-3.5" />
                                     <span>Suspended (1)</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="tier" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="tier" className="text-[11px] font-bold uppercase px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <BarChart3 className="w-3.5 h-3.5" />
                                     <span>Tier Distribution</span>
                                 </TabsTrigger>
