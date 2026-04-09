@@ -9,33 +9,37 @@ import { UserTable } from "@/components/users/user-table";
 import { TierDistribution } from "@/components/users/tier-distribution";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, UserPlus, FileDown, Users, Home, Building2, UserX, BarChart3 } from "lucide-react";
-import { userService, UserRecord } from "@/services/user.service";
+import { userService, UserRecord, DashboardStats } from "@/services/user.service";
 import { useSearch } from "@/context/search-context";
 import { LiveStatus } from "@/components/ui/live-status";
 
 export default function UsersPage() {
     const { searchQuery, setSearchQuery } = useSearch();
     const [users, setUsers] = useState<UserRecord[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("all");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
-        const loadUsers = async () => {
+        const load = async () => {
             setIsLoading(true);
             try {
-                const data = await userService.getUsers();
+                const [data, dashData] = await Promise.all([
+                    userService.getUsers(),
+                    userService.getDashboardStats(),
+                ]);
                 setUsers(data);
+                setStats(dashData);
             } catch (error) {
                 console.error("Failed to fetch users:", error);
             } finally {
                 setIsLoading(false);
             }
         };
-        loadUsers();
+        load();
     }, []);
 
     const filteredUsers = users.filter((user) => {
@@ -52,6 +56,12 @@ export default function UsersPage() {
 
         return matchesSearch && matchesTab;
     });
+
+    // Dynamic counts — fall back to counting from users array if stats unavailable
+    const totalCount = stats?.users.total ?? users.length;
+    const residentialCount = stats?.users.residential ?? users.filter(u => u.type === "Residential").length;
+    const businessCount = stats?.users.business ?? users.filter(u => u.type === "Business").length;
+    const suspendedCount = stats?.users.suspended ?? users.filter(u => u.status === "Suspended").length;
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-[#2D3436]">
@@ -73,33 +83,33 @@ export default function UsersPage() {
                     </div>
                     {/* User Summary Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                        <UserSummaryCard title="Total Users" count={5} subtext="Manage 5 registered users" icon={Users} />
-                        <UserSummaryCard title="Residential Users" count={3} subtext="Private households" icon={Home} />
-                        <UserSummaryCard title="Business Accounts" count={2} subtext="Commercial entities" icon={Building2} />
-                        <UserSummaryCard title="Suspended" count={1} subtext="Pending verification" icon={UserX} />
+                        <UserSummaryCard title="Total Users" count={totalCount} subtext={`Manage ${totalCount} registered users`} icon={Users} />
+                        <UserSummaryCard title="Residential Users" count={residentialCount} subtext="Private households" icon={Home} />
+                        <UserSummaryCard title="Business Accounts" count={businessCount} subtext="Commercial entities" icon={Building2} />
+                        <UserSummaryCard title="Suspended" count={suspendedCount} subtext="Pending verification" icon={UserX} />
                     </div>
 
                     {/* Tabs / Filters Section - Responsive Horizontal Scroll */}
                     <div className="pt-2 overflow-x-auto scrollbar-hide">
                         <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full">
                             <TabsList className="bg-transparent border-none p-0 h-auto flex whitespace-nowrap gap-3 min-w-max pb-2">
-                                <TabsTrigger value="all" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="all" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Users className="w-3.5 h-3.5" />
-                                    <span>All Users (5)</span>
+                                    <span>All Users ({totalCount})</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="residential" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="residential" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Home className="w-3.5 h-3.5" />
-                                    <span>Residential (3)</span>
+                                    <span>Residential ({residentialCount})</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="business" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="business" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <Building2 className="w-3.5 h-3.5" />
-                                    <span>Business (2)</span>
+                                    <span>Business ({businessCount})</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="suspended" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="suspended" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <UserX className="w-3.5 h-3.5" />
-                                    <span>Suspended (1)</span>
+                                    <span>Suspended ({suspendedCount})</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="tier" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-active:bg-primary-green data-active:text-white data-active:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
+                                <TabsTrigger value="tier" className="text-[10px] md:text-[11px] font-bold uppercase px-4 md:px-5 py-2.5 rounded-[4px] border border-gray-200 bg-white data-[state=active]:bg-primary-green data-[state=active]:text-white data-[state=active]:border-primary-green hover:bg-green-50 hover:text-primary-green transition-all shadow-sm flex items-center space-x-2">
                                     <BarChart3 className="w-3.5 h-3.5" />
                                     <span>Tier Distribution</span>
                                 </TabsTrigger>
@@ -108,7 +118,7 @@ export default function UsersPage() {
                     </div>
 
                     {activeTab === "tier" ? (
-                        <TierDistribution />
+                        <TierDistribution tierData={stats?.users.tierDistribution ?? null} />
                     ) : (
                         <>
                             {/* Search and Export Row - Stack on mobile */}
@@ -136,13 +146,10 @@ export default function UsersPage() {
                                 </div>
                             </div>
 
-                            {/* Main Table - Horizontal Scroll on small screens handled by parent min-w-0 */}
+                            {/* Main Table */}
                             <div className="-mx-4 md:mx-0 overflow-x-auto">
                                 <UserTable users={filteredUsers} isLoading={isLoading} />
                             </div>
-
-                            {/* Main Table */}
-                            <UserTable users={filteredUsers} isLoading={isLoading} />
                         </>
                     )}
                 </main>

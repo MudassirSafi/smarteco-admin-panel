@@ -58,7 +58,7 @@ export default function SmartBinManagementPage() {
 
     const tabs = [
         { name: "Over view", icon: Search },
-        { name: "Active Alerts", count: 4, icon: AlertCircle },
+        { name: "Active Alerts", count: stats?.alerts || 0, icon: AlertCircle },
         { name: "Sensor Data", icon: Clock },
         { name: "Assignment Logs", icon: FileText },
     ];

@@ -21,7 +21,8 @@ import {
     Building2,
     Home,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserRecord } from "@/services/user.service";
@@ -145,6 +146,11 @@ export function UserTable({ users, isLoading }: UserTableProps) {
                                         className="p-1.5 hover:bg-green-50 hover:text-green-600 rounded-[4px] border border-gray-100 shadow-sm transition-all text-[#B2BEC3] hover:border-green-200"
                                     >
                                         <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        className="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-[4px] border border-gray-100 shadow-sm transition-all text-[#B2BEC3] hover:border-red-200"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </TableCell>

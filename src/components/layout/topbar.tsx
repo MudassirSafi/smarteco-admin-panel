@@ -10,6 +10,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuGroup,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -18,6 +19,7 @@ import { useEffect, useState } from "react";
 import { userService, UserProfile } from "@/services/user.service";
 import { notificationService, Notification } from "@/services/notification.service";
 import { systemService } from "@/services/system.service";
+import Link from "next/link";
 
 interface TopbarProps {
     onMenuClick?: () => void;
@@ -32,7 +34,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     useEffect(() => {
         userService.getProfile()
             .then((data) => setProfile(data))
-            .catch(() => {
+            .catch((err) => {
+                console.error("Topbar: Failed to fetch user profile:", err.message);
                 // Silently fail — topbar stays functional with fallback values
             });
 
@@ -135,20 +138,24 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                         <ChevronDown className="h-4 w-4 text-gray-400 hidden sm:block" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                            <div className="flex flex-col">
-                                <span>{displayName}</span>
-                                {profile?.email && (
-                                    <span className="text-[11px] text-gray-400 font-normal truncate">
-                                        {profile.email}
-                                    </span>
-                                )}
-                            </div>
-                        </DropdownMenuLabel>
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-gray-900 leading-tight truncate">{displayName}</span>
+                                    {profile?.email && (
+                                        <span className="text-[10px] text-gray-400 font-medium truncate mt-0.5">
+                                            {profile.email}
+                                        </span>
+                                    )}
+                                </div>
+                            </DropdownMenuLabel>
+                        </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-                        <DropdownMenuItem>Security Status</DropdownMenuItem>
-                        <DropdownMenuItem>Admin Logs</DropdownMenuItem>
+                        <DropdownMenuItem render={<Link href="/profile" className="flex w-full cursor-pointer" />}>
+                            Profile Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-default opacity-50">Security Status</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-default opacity-50">Admin Logs</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-red-600 font-semibold">Sign Out</DropdownMenuItem>
                     </DropdownMenuContent>

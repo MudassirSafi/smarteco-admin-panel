@@ -4,20 +4,40 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card } from "@/components/ui/card";
 
-// Matching the colors from the Figma design in the image
-const TIER_DATA = [
-    { name: 'Eco Starter', value: 45, color: '#95A5A6' }, // Grey
-    { name: 'Eco Warrior', value: 32, color: '#3498DB' }, // Blue
-    { name: 'Eco Champion', value: 18, color: '#2ECC71' }, // Green
-    { name: 'Eco Legend', value: 5, color: '#E67E22' },   // Orange
-];
+interface TierDataItem {
+    name: string;
+    value: number;
+    color: string;
+}
 
-export function TierDistribution() {
+interface TierDistributionProps {
+    tierData?: {
+        ECO_STARTER: number;
+        ECO_WARRIOR: number;
+        ECO_CHAMPION: number;
+    } | null;
+}
+
+export function TierDistribution({ tierData }: TierDistributionProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Build chart data from real DB values, fallback to zeros if not loaded yet
+    const TIER_DATA: TierDataItem[] = [
+        { name: 'Eco Starter',  value: tierData?.ECO_STARTER  ?? 0, color: '#95A5A6' },
+        { name: 'Eco Warrior',  value: tierData?.ECO_WARRIOR  ?? 0, color: '#3498DB' },
+        { name: 'Eco Champion', value: tierData?.ECO_CHAMPION ?? 0, color: '#2ECC71' },
+    ];
+
+    // If all zero (loading or empty), show a placeholder segment so chart doesn't break
+    const total = TIER_DATA.reduce((s, t) => s + t.value, 0);
+    const chartData = total === 0
+        ? [{ name: 'No Data', value: 1, color: '#E9ECEF' }]
+        : TIER_DATA;
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Left Card: Pie Chart */}
@@ -28,17 +48,17 @@ export function TierDistribution() {
                         <ResponsiveContainer width="100%" height="100%" debounce={100}>
                             <PieChart>
                                 <Pie
-                                    data={TIER_DATA}
+                                    data={chartData}
                                     cx="50%"
                                     cy="50%"
-                                    labelLine={true}
-                                    label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                                    labelLine={total > 0}
+                                    label={total > 0 ? ({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%` : undefined}
                                     outerRadius={80}
                                     dataKey="value"
                                     stroke="none"
                                     className="text-[10px] font-semibold outline-none"
                                 >
-                                    {TIER_DATA.map((entry, index) => (
+                                    {chartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>

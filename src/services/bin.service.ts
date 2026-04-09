@@ -19,10 +19,10 @@ export interface BinRecord {
 }
 
 export interface BinStats {
-    users: number;
-    completed: number;
-    inProgress: number;
-    scheduled: number;
+    total: number;
+    alerts: number;
+    active: number;
+    maintenance: number;
 }
 
 export interface AssignmentRecord {
@@ -130,8 +130,31 @@ export const binService = {
      * Fetch bins for current user
      */
     getBins: async (): Promise<BinRecord[]> => {
-        const res = await apiGet<UserBinsResponse>('/bins');
-        return res.data.map(mapBackendBinToFrontend);
+        const res = await apiGet<{ success: boolean; data: any[] }>('/admin/bins');
+        if (res.success && res.data) {
+            return res.data.map(bb => ({
+                id: bb.qrCode,
+                user: {
+                    name: `${bb.user?.firstName || ''} ${bb.user?.lastName || ''}`.trim() || 'Resident',
+                    address: bb.user?.address || 'Kigali'
+                },
+                type: mapWasteType(bb.wasteType),
+                fillLevel: bb.fillLevel,
+                lastEmptied: bb.lastEmptied ? new Date(bb.lastEmptied).toISOString().split('T')[0] : 'N/A',
+                alertStatus: calculateAlertStatus(bb.fillLevel),
+                collector: bb.pickups?.[0]?.collector?.user 
+                    ? `${bb.pickups[0].collector.user.firstName} ${bb.pickups[0].collector.user.lastName}`
+                    : "Unassigned",
+                history: [
+                    { time: "00:00", level: Math.max(0, bb.fillLevel - 40) },
+                    { time: "06:00", level: Math.max(0, bb.fillLevel - 20) },
+                    { time: "12:00", level: Math.max(0, bb.fillLevel - 10) },
+                    { time: "18:00", level: bb.fillLevel },
+                    { time: "24:00", level: bb.fillLevel }
+                ]
+            }));
+        }
+        return [];
     },
 
     /**
@@ -147,15 +170,16 @@ export const binService = {
      * Aggregates stats dynamically based on the user's bin data for visually rendering Admin charts
      */
     getStats: async (): Promise<BinStats> => {
-        const res = await apiGet<UserBinsResponse>('/bins');
-        const bins = res.data;
-        
-        return {
-            users: 1, // Single resident
-            completed: bins.filter(b => b.fillLevel < 20).length,
-            inProgress: bins.filter(b => b.fillLevel >= 80).length,
-            scheduled: bins.filter(b => b.fillLevel >= 60 && b.fillLevel < 80).length
-        };
+        const res = await apiGet<{ success: boolean; data: any }>('/admin/analytics/bins');
+        if (res.success && res.data) {
+            return {
+                total: res.data.total || 0,
+                alerts: res.data.alerts || 0,
+                active: res.data.active || 0,
+                maintenance: res.data.maintenance || 0
+            };
+        }
+        return { total: 0, alerts: 0, active: 0, maintenance: 0 };
     },
 
     /**

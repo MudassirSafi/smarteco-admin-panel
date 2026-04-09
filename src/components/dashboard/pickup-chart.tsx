@@ -13,15 +13,14 @@ import {
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-const data = [
-    { name: 'Mon', pickups: 125, waste: 20 },
-    { name: 'Tue', pickups: 145, waste: 22 },
-    { name: 'Wed', pickups: 170, waste: 25 },
-    { name: 'Thu', pickups: 135, waste: 26 },
-    { name: 'Fri', pickups: 185, waste: 32 },
-    { name: 'Sat', pickups: 215, waste: 38 },
-    { name: 'Sun', pickups: 160, waste: 30 },
-];
+interface PickupChartProps {
+    data?: Array<{
+        name: string;
+        pickups: number;
+        waste: number;
+    }>;
+    isLoading: boolean;
+}
 
 const SquareDot = (props: any) => {
     const { cx, cy, fill } = props;
@@ -30,12 +29,15 @@ const SquareDot = (props: any) => {
     );
 };
 
-export function PickupChart() {
+export function PickupChart({ data, isLoading }: PickupChartProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const chartData = data || [];
+
     return (
         <Card className="border border-gray-100 shadow-sm col-span-2">
             <CardHeader className="pb-0 pt-6 px-8">
@@ -44,9 +46,9 @@ export function PickupChart() {
             </CardHeader>
             <CardContent className="p-6 pt-2">
                 <div className="h-[300px] w-full min-w-0">
-                    {mounted ? (
+                    {mounted && !isLoading ? (
                         <ResponsiveContainer width="100%" height="100%" debounce={100}>
-                            <LineChart data={data} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
+                            <LineChart data={chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis
                                     dataKey="name"

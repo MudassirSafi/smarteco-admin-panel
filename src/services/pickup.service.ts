@@ -20,6 +20,7 @@ export interface PickupRecord {
 
 export interface PickupStats {
     total: number;
+    today: number;
     completed: number;
     inProgress: number;
     scheduled: number;
@@ -182,12 +183,13 @@ export const pickupService = {
         if (res.success && res.data) {
             return {
                 total: res.data.total || 0,
+                today: res.data.today || 0,
                 completed: res.data.completed || 0,
                 inProgress: res.data.inProgress || 0,
-                scheduled: res.data.pending || 0
+                scheduled: res.data.scheduled || 0
             };
         }
-        return { total: 0, completed: 0, inProgress: 0, scheduled: 0 };
+        return { total: 0, today: 0, completed: 0, inProgress: 0, scheduled: 0 };
     },
 
     /**

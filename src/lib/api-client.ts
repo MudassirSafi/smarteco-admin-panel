@@ -92,3 +92,22 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
     }
     return res.json() as Promise<T>;
 }
+
+export async function apiDelete<T = void>(path: string): Promise<T> {
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method: 'DELETE',
+        headers: buildHeaders(),
+    });
+    if (res.status === 401) {
+        handleUnauthorized();
+        throw new Error('Unauthorized');
+    }
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message ?? `DELETE ${path} failed: ${res.status}`);
+    }
+    if (res.status === 204 || res.headers.get('content-length') === '0') {
+        return undefined as T;
+    }
+    return res.json() as Promise<T>;
+}

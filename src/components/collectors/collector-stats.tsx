@@ -12,27 +12,25 @@ interface CollectorStatProps {
 
 function StatCard({ title, value, type }: CollectorStatProps) {
     const iconMap = {
-        location: { icon: MapPin, color: "bg-green-50 text-primary-green" },
-        route: { icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
-        rating: { icon: Star, color: "bg-yellow-50 text-yellow-600" },
+        location: { icon: MapPin, color: "bg-blue-50 text-blue-600" },
+        route: { icon: TrendingUp, color: "bg-indigo-50 text-indigo-600" },
+        rating: { icon: Star, color: "bg-orange-50 text-orange-600" },
         pickups: { icon: TrendingUp, color: "bg-green-50 text-primary-green" },
     };
 
     const { icon: Icon, color } = iconMap[type];
 
     return (
-        <Card className="flex-1 min-w-[140px] h-[98px] rounded-[4px] border border-gray-100 bg-white p-3 md:p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition-all group overflow-hidden relative cursor-default">
-            <div className="flex justify-between items-start relative z-10">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{title}</p>
-                <div className={cn("p-1.5 rounded-[4px] shadow-sm transition-all group-hover:bg-opacity-100 group-hover:text-white", color,
-                    type === 'location' || type === 'pickups' ? "group-hover:bg-primary-green" :
-                        type === 'route' ? "group-hover:bg-blue-600" : "group-hover:bg-yellow-600"
-                )}>
-                    <Icon className="w-3.5 h-3.5" />
+        <Card className="flex-1 min-w-[140px] rounded-xl border border-gray-100 bg-white p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition-all group overflow-hidden relative cursor-default">
+            <div className="flex justify-between items-start mb-4">
+                <p className="text-[10px] md:text-sm font-bold text-gray-500 uppercase tracking-tight">{title}</p>
+                <div className={cn("p-2 rounded-lg shadow-sm transition-all", color)}>
+                    <Icon className="w-4 h-4" />
                 </div>
             </div>
-            <div className="flex items-end justify-between relative z-10">
-                <h3 className="text-2xl font-bold text-gray-900 leading-none">{value}</h3>
+            <div>
+                <h3 className="text-xl md:text-3xl font-bold text-gray-900 leading-none">{value}</h3>
+                <p className="text-[10px] text-gray-400 font-medium mt-2">Active records</p>
             </div>
         </Card>
     );

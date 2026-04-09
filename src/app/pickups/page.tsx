@@ -65,7 +65,9 @@ export default function PickupManagementPage() {
                     <div className="flex flex-row items-start justify-between gap-6">
                         <div>
                             <h1 className="text-xl md:text-2xl font-bold text-[#1A1A1A] tracking-tight leading-tight">Pickup Management</h1>
-                            <p className="text-[12px] md:text-sm text-[#636E72] font-semibold mt-1">5 total pickups today</p>
+                            <p className="text-[12px] md:text-sm text-[#636E72] font-semibold mt-1">
+                                {stats?.today || 0} total pickups today
+                            </p>
                         </div>
                         <div className="flex-shrink-0 pt-1">
                             <LiveStatus />

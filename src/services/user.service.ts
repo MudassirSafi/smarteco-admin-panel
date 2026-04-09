@@ -1,11 +1,4 @@
-/**
- * User Service — Real API Integration
- * Calls GET /api/v1/users/me, PATCH /api/v1/users/me, PUT /api/v1/users/me/fcm-token
- */
-
-import { apiGet, apiPatch, apiPut, apiPost } from '@/lib/api-client';
-
-// ─── Response Types (matches backend shape) ───────────────────────────────────
+import { apiGet, apiDelete } from '../lib/api-client';
 
 export interface UserProfile {
     id: string;
@@ -13,130 +6,142 @@ export interface UserProfile {
     email: string | null;
     firstName: string | null;
     lastName: string | null;
-    userType: 'RESIDENTIAL' | 'BUSINESS';
+    userType: string;
     role: string;
-    referralCode: string | null;
     avatarUrl: string | null;
-    isActive: boolean;
     ecoPoints: number;
-    ecoTier: 'ECO_STARTER' | 'ECO_WARRIOR' | 'ECO_CHAMPION';
-    tierMultiplier: number;
+    ecoTier: string;
     totalPickups: number;
-    memberSince: string;
 }
 
-export interface UpdateProfilePayload {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    userType?: 'RESIDENTIAL' | 'BUSINESS';
-    avatarUrl?: string;
-}
-
-// Legacy interface kept for compatibility with the existing UserTable component
 export interface UserRecord {
     id: string;
     name: string;
     phone: string;
-    type: string;
-    tier: string;
-    points: string;
-    pickups: number;
-    status: 'Active' | 'Suspended';
     location: string;
+    type: "Residential" | "Business";
+    tier: string;
+    points: number;
+    pickups: number;
+    status: "Active" | "Suspended";
 }
 
-// ─── API Response Wrappers ────────────────────────────────────────────────────
-
-interface GetProfileResponse {
-    success: boolean;
-    data: UserProfile;
+export interface DashboardStats {
+    users: {
+        total: number;
+        residential: number;
+        business: number;
+        active: number;
+        suspended: number;
+        newThisWeek: number;
+        tierDistribution: {
+            ECO_STARTER: number;
+            ECO_WARRIOR: number;
+            ECO_CHAMPION: number;
+        };
+    };
+    pickups: {
+        totalCompleted: number;
+        todayScheduled: number;
+        todayCompleted: number;
+    };
+    revenue: {
+        totalRWF: number;
+        thisMonthRWF: number;
+        todayRWF: number;
+    };
+    collectors: {
+        total: number;
+        avgRating: number;
+    };
+    recentActivity?: Array<{
+        id: string;
+        type: 'USER_REGISTRATION' | 'PICKUP_COMPLETED' | 'PAYMENT_RECEIVED' | 'SYSTEM_ALERT';
+        user: string;
+        time: string | Date;
+        detail?: string;
+    }>;
+    pickupTrend?: Array<{
+        name: string;
+        pickups: number;
+        waste: number;
+    }>;
+    activeCollectors?: Array<{
+        id: string;
+        name: string;
+        status: string;
+        pickupsToday: number;
+        avatar: string;
+    }>;
 }
 
-interface UpdateProfileResponse {
-    success: boolean;
-    message: string;
-    data: Omit<UserProfile, 'ecoPoints' | 'ecoTier' | 'tierMultiplier' | 'totalPickups' | 'memberSince' | 'isActive'>;
+function mapTier(ecoTier: string): string {
+    switch (ecoTier) {
+        case 'ECO_CHAMPION': return 'Eco Champion';
+        case 'ECO_WARRIOR': return 'Eco Warrior';
+        default: return 'Eco Starter';
+    }
 }
-
-interface UpdateFcmTokenResponse {
-    success: boolean;
-    message: string;
-}
-
-// ─── Service ─────────────────────────────────────────────────────────────────
 
 export const userService = {
-    /**
-     * GET /api/v1/users/me
-     * Returns the currently authenticated admin's own profile.
-     */
-    async getProfile(): Promise<UserProfile> {
-        const res = await apiGet<GetProfileResponse>('/users/me');
-        return res.data;
+    getProfile: async (): Promise<UserProfile> => {
+        const response: any = await apiGet('/users/me');
+        return response.data;
     },
 
-    /**
-     * PATCH /api/v1/users/me
-     * Updates profile fields for the authenticated user.
-     * Only provided fields are updated (all optional).
-     */
-    async updateProfile(payload: UpdateProfilePayload): Promise<UpdateProfileResponse['data']> {
-        const res = await apiPatch<UpdateProfileResponse>('/users/me', payload);
-        return res.data;
-    },
-
-    /**
-     * PUT /api/v1/users/me/fcm-token
-     * Updates the FCM push notification token.
-     * Call on app startup or when the FCM token refreshes.
-     */
-    async updateFcmToken(fcmToken: string): Promise<{ success: boolean; message: string }> {
-        const res = await apiPut<UpdateFcmTokenResponse>('/users/me/fcm-token', { fcmToken });
-        return res;
-    },
-
-    /**
-     * GET /api/v1/admin/users
-     * Admin-only endpoint to list all users in the system.
-     */
-    async getUsers(): Promise<UserRecord[]> {
-        const res = await apiGet<{ success: boolean; data: any[] }>('/admin/users');
-        if (res.success && res.data) {
-            return res.data.map(u => ({
-                id: u.id,
-                name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.phone,
-                phone: u.phone,
-                type: u.userType === 'RESIDENTIAL' ? 'Residential' : 'Business',
-                tier: u.ecoTier === 'ECO_STARTER' ? 'Eco Starter' : u.ecoTier === 'ECO_WARRIOR' ? 'Eco Warrior' : 'Eco Champion',
-                points: (u.ecoPoints || 0).toLocaleString(),
-                pickups: u.totalPickups || 0,
-                status: u.isActive ? 'Active' : 'Suspended',
-                location: u.homeAddress || 'Kigali'
+    getUsers: async (): Promise<UserRecord[]> => {
+        try {
+            const response: any = await apiGet('/admin/users');
+            const list = Array.isArray(response) ? response : (response?.data ?? []);
+            return list.map((u: any) => ({
+                id: String(u.id).slice(0, 8).toUpperCase(),
+                name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.phone,
+                phone: u.phone || 'No Phone',
+                location: u.location || 'Kigali, Rwanda',
+                type: u.userType === 'BUSINESS' ? 'Business' : 'Residential',
+                tier: mapTier(u.ecoTier),
+                points: u.ecoPoints ?? 0,
+                pickups: u.totalPickups ?? 0,
+                status: u.isActive === false ? 'Suspended' : 'Active',
             }));
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
+            return [];
         }
-        return [];
     },
 
-    /**
-     * PATCH /api/v1/admin/users/{id}
-     * Admin-only endpoint to update user status or details.
-     */
-    async toggleUserStatus(userId: string): Promise<boolean> {
-        // Fetch current user record to toggle status
-        const users = await this.getUsers();
-        const user = users.find(u => u.id === userId);
-        if (!user) return false;
-
-        const newStatus = user.status === 'Active' ? false : true;
-        const res = await apiPatch<{ success: boolean }>(`/admin/users/${userId}`, {
-            isActive: newStatus
-        });
-        return res.success;
+    getDashboardStats: async (): Promise<DashboardStats | null> => {
+        try {
+            const response: any = await apiGet('/admin/dashboard');
+            // If the response itself is { success: true, data: { ... } }
+            const stats = response?.data || response;
+            if (stats && stats.users) {
+                return stats;
+            }
+            return null;
+        } catch (error) {
+            console.error('Failed to fetch dashboard stats:', error);
+            return null;
+        }
     },
 
-    async createUser(userData: any): Promise<boolean> {
-        const res = await apiPost<{ success: boolean }>('/admin/users', userData);
-        return res.success;
+    deleteUser: async (id: string): Promise<boolean> => {
+        try {
+            await apiDelete(`/admin/users/${id}`);
+            return true;
+        } catch (error) {
+            console.error(`Failed to delete user ${id}:`, error);
+            throw error;
+        }
     },
+
+    updateProfile: async (data: Partial<UserProfile>): Promise<boolean> => {
+        try {
+            const res: any = await apiPatch('/users/me', data);
+            return res.success;
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+            throw error;
+        }
+    }
 };

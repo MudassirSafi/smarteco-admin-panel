@@ -14,7 +14,9 @@ import {
     Star,
     Eye,
     Pencil,
+    User,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { CollectorRecord } from "@/services/collector.service";
 
@@ -53,12 +55,19 @@ export function CollectorTable({ collectors, isLoading, onView, onEdit }: Collec
                 </TableHeader>
                 <TableBody>
                     {collectors.map((collector) => (
-                        <TableRow key={collector.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors h-16 group">
-                            <TableCell className="px-6 font-bold text-[#1A1A1A] text-sm">{collector.id}</TableCell>
+                        <TableRow key={collector.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-all h-20 group">
+                            <TableCell className="px-6 font-bold text-gray-500 text-xs tracking-tighter uppercase">{collector.id}</TableCell>
                             <TableCell className="px-6">
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-[#2D3436] leading-tight">{collector.name}</span>
-                                    <span className="text-[11px] text-[#636E72] font-semibold mt-0.5">{collector.phone}</span>
+                                <div className="flex items-center space-x-3">
+                                    <Avatar className="h-10 w-10 border border-gray-100 rounded-md">
+                                        <AvatarFallback className="bg-primary-green text-white font-bold text-xs rounded-md">
+                                            {collector.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-green transition-colors">{collector.name}</span>
+                                        <span className="text-[11px] text-gray-400 font-bold mt-0.5">{collector.phone}</span>
+                                    </div>
                                 </div>
                             </TableCell>
                             <TableCell className="px-6">
@@ -105,15 +114,17 @@ export function CollectorTable({ collectors, isLoading, onView, onEdit }: Collec
                                 <div className="flex items-center justify-end space-x-2">
                                     <button
                                         onClick={() => onView?.(collector)}
-                                        className="p-1.5 hover:bg-blue-50 hover:text-blue-600 rounded-[4px] border border-gray-100 shadow-sm transition-all text-[#B2BEC3] hover:border-blue-200"
+                                        className="p-2 hover:bg-gray-100 hover:text-primary-green rounded-lg border border-transparent transition-all text-gray-400"
+                                        title="View Details"
                                     >
-                                        <Eye className="w-3.5 h-3.5" />
+                                        <Eye className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => onEdit?.(collector)}
-                                        className="p-1.5 hover:bg-green-50 hover:text-green-600 rounded-[4px] border border-gray-100 shadow-sm transition-all text-[#B2BEC3] hover:border-green-200"
+                                        className="p-2 hover:bg-gray-100 hover:text-blue-600 rounded-lg border border-transparent transition-all text-gray-400"
+                                        title="Edit Collector"
                                     >
-                                        <Pencil className="w-3.5 h-3.5" />
+                                        <Pencil className="w-4 h-4" />
                                     </button>
                                 </div>
                             </TableCell>

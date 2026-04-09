@@ -36,28 +36,28 @@ export function BinStats({ stats }: { stats: BinStatsData | null }) {
     const items = [
         {
             title: "Total users",
-            value: stats.users,
+            value: stats.total,
             icon: Users,
             color: "bg-green-50 text-primary-green",
             hoverColor: "group-hover:bg-primary-green"
         },
         {
             title: "Completed",
-            value: stats.completed,
+            value: stats.active,
             icon: CheckCircle,
             color: "bg-green-50 text-primary-green",
             hoverColor: "group-hover:bg-primary-green"
         },
         {
             title: "In Progress",
-            value: stats.inProgress,
+            value: stats.alerts,
             icon: RefreshCw,
             color: "bg-blue-50 text-blue-600",
             hoverColor: "group-hover:bg-blue-600"
         },
         {
             title: "Scheduled",
-            value: stats.scheduled,
+            value: stats.maintenance,
             icon: Calendar,
             color: "bg-yellow-50 text-yellow-600",
             hoverColor: "group-hover:bg-yellow-600"
